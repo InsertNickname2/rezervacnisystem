@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="cs">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rezervační systém</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #000000;
+            margin: 0;
+            padding: 20px;
+            height: 100vh;
+            box-sizing: border-box;
+            background-image: url('pozadi.jpg');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .page {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .main-title {
+            text-align: center;
+            color: #72e3ff;
+            font-size: 50px;
+            margin-bottom: 20px;
+        }
+
+        .vedle {
+            display: flex;
+            gap: 20px;
+            justify-content: space-between;
+        }
+
+        .window {
+            background-color: #000000a6;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 48%;
+            box-sizing: border-box;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: #ffffff;
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #ffffff;
+            font-weight: bold;
+        }
+
+        input, textarea, button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #007bff;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .admin-login {
+            display: inline-block;
+            margin-top: 20px;
+            margin-left: 1000px;
+            font-size: 18px;
+            color: #000000;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page">
+        <h1 class="main-title">Rezervační systém</h1>
+        <div class="vedle">
+            <div id="login-section" class="window">
+                <h2>Přihlášení</h2>
+                <form id="loginForm">
+                    <label for="loginEmail">E-mail:</label>
+                    <input type="text" id="loginEmail" name="email" required>
+                    <label for="loginPassword">Heslo:</label>
+                    <input type="password" id="loginPassword" name="password" required>
+                    <div id="loginError" style="color: red; display: none;">Neplatný e-mail nebo heslo.</div>
+                    <button type="submit">Přihlásit se</button>
+                </form>
+            
+                <button id="showRegisterForm">Registrovat se</button>
+                
+                <!-- Skrytý formulář pro registraci -->
+                <div id="registerForm" style="display: none; margin-top: 20px;">
+                    <h2>Registrace</h2>
+                    <form id="registerUserForm">
+                        <label for="registerEmail">E-mail:</label>
+                        <input type="email" id="registerEmail" name="email" required>
+                        <label for="registerPassword">Heslo:</label>
+                        <input type="password" id="registerPassword" name="password" required>
+                        <button type="submit">Vytvořit účet</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Rezervační formulář -->
+            <div id="reservation-section" class="window">
+                <h2>Rezervace</h2>
+                <br>
+                <form id="reservationForm">
+                    <label for="name">Jméno:</label>
+                    <input type="text" name="name" id="name" required>
+                    <label for="phone">Telefon:</label>
+                    <input type="text" name="phone" id="phone">
+                    <label for="email">E-mail:</label>
+                    <input type="email" name="email" id="email">
+                    <label for="reservation_date">Datum a čas:</label>
+                    <input type="datetime-local" name="reservation_date" id="reservation_date" required>
+                    <label for="guests">Počet osob:</label>
+                    <input type="number" name="guests" id="guests" required>
+                    <label for="notes">Poznámky:</label>
+                    <textarea name="notes" id="notes" rows="3"></textarea>
+                    <button type="submit">Rezervovat</button>
+                </form>
+            </div>
+        </div>
+        <div id="registerError" style="color: red; display: none;"></div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            let formData = new FormData(this);
+            formData.append("login", "1");
+
+            fetch('database.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                console.log(data); // Pro ladění, aby ses ujistil, co server vrací
+                if (data.trim() === 'user') {
+                    window.location.href = 'user_dashboard.php';
+                } else if (data.trim() === 'admin') {
+                    window.location.href = 'admin_dashboard.php';
+                } else {
+                    document.getElementById('loginError').style.display = 'block';
+                }
+            });
+        });
+            // Zobrazení registračního formuláře
+        document.getElementById('showRegisterForm').addEventListener('click', function () {
+            document.getElementById('registerForm').style.display = 'block';
+        });
+
+        // Zpracování registrace
+        document.getElementById('registerUserForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            let formData = new FormData(this);
+            formData.append("register", "1");
+
+            fetch('database.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                alert(data);
+                if (data.includes("úspěšná")) {
+                    document.getElementById('registerForm').style.display = 'none';
+                }
+            })
+            .catch(() => alert('Chyba při registraci.'));
+        });
+
+        // Rezervace
+        document.getElementById('reservationForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+            let formData = new FormData(this);
+            formData.append("reserve", "1");
+
+            fetch('database.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                alert(data);
+            })
+            .catch(() => alert('Chyba při komunikaci se serverem'));
+        });
+    </script>
+</body>
+
+</html>
